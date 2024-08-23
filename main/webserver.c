@@ -21,6 +21,8 @@ char* str_arr_to_json(const char* str_arr,
 		      uint32_t el_size,
 		      uint32_t* res_len);
 
+int8_t switch_light(int btn_no);
+
 // ----------------------------------------- HANDLERS
 esp_err_t root_get_handler(httpd_req_t* req)
 {
@@ -86,13 +88,19 @@ esp_err_t switch_get_handler(httpd_req_t* req)
 	}
 
 	if (btn_no < 0 || btn_no > NR_BTNS - 1)
+		goto err;
+	else
 	{
-		httpd_resp_set_status(req, HTTPD_400);
-		httpd_resp_send(req, NULL, 0);
-	} else
-	{
-		httpd_resp_send(req, "OK", 2);
+		if (switch_light(btn_no) == 0)
+			httpd_resp_send(req, "OK", 2);
+		else goto err;
 	}
+
+	return ESP_OK;
+
+err:
+	httpd_resp_set_status(req, HTTPD_400);
+	httpd_resp_send(req, NULL, 0);
 
 	return ESP_OK;
 }
@@ -211,3 +219,18 @@ char* str_arr_to_json(const char* str_arr,
 	return tmp;
 }
 
+int8_t switch_light(int btn_no)
+{
+	if (!strncmp(btn_status[btn_no], "OFF", 3))
+	{
+		// turn on the light
+		memcpy(btn_status[btn_no], "ON", 2);
+		btn_status[btn_no][2] = 0;
+	} else {
+		// turn off the light
+		memcpy(btn_status[btn_no], "OFF", 3);
+		btn_status[btn_no][3] = 0;
+	}
+
+	return 0;
+}
