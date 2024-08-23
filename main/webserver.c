@@ -4,6 +4,7 @@
 #include "webserver.h"
 
 // ----------------------------------------- DEFINES
+#define MAX_QUERY_KEY_LEN	256
 #define MAX_BTN_NAME_LEN 	20
 #define NR_BTNS			4
 #define MAX_BTN_STATUS_LEN	4
@@ -65,6 +66,39 @@ esp_err_t btn_status_get_handler(httpd_req_t* req)
 	return ESP_OK;
 }
 
+esp_err_t switch_get_handler(httpd_req_t* req)
+{
+	char* query;
+	char query_key[MAX_QUERY_KEY_LEN];
+	int8_t btn_no = -1;
+	size_t query_len;
+
+	query_len = httpd_req_get_url_query_len(req) + 1;
+	if (query_len > 1)
+	{
+		query = malloc(query_len);
+		if (httpd_req_get_url_query_str(req, query, query_len) == ESP_OK)
+			if (httpd_query_key_value(query, "btn_no", query_key, sizeof(query_key)) == ESP_OK)
+				if (query_key[0] > 0x2f && query_key[0] < 0x30 + NR_BTNS)
+					btn_no = query_key[0] - 0x30;
+		free(query);
+	}
+
+	if (btn_no != -1)
+	{
+		printf("got btn_no %d\n", btn_no);
+		httpd_resp_send(req, "OK", 2);
+	} else
+	{
+		printf("could not get btn_no\n");
+		httpd_resp_set_status(req, HTTPD_400);
+		httpd_resp_send(req, NULL, 0);
+	}
+
+
+	return ESP_OK;
+}
+
 // ---------------------------------------- URI CONFIGS
 const httpd_uri_t root_uri = {
 	.uri = "/",
@@ -87,6 +121,13 @@ const httpd_uri_t btn_status_uri = {
 	.user_ctx = NULL
 };
 
+const httpd_uri_t switch_uri = {
+	.uri = "/switch",
+	.method = HTTP_GET,
+	.handler = switch_get_handler,
+	.user_ctx = NULL
+};
+
 // ---------------------------------------- PUBLIC
 httpd_handle_t webserver_start(void)
 {
@@ -104,6 +145,7 @@ httpd_handle_t webserver_start(void)
 		httpd_register_uri_handler(server, &root_uri);
 		httpd_register_uri_handler(server, &btn_names_uri);
 		httpd_register_uri_handler(server, &btn_status_uri);
+		httpd_register_uri_handler(server, &switch_uri);
 		return server;
 	}
 
