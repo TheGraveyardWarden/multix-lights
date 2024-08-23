@@ -15,6 +15,7 @@ __NOINIT_ATTR char btn_names[NR_BTNS][MAX_BTN_NAME_LEN];
 __NOINIT_ATTR char btn_status[NR_BTNS][MAX_BTN_STATUS_LEN];
 
 void init_btns(void);
+
 char* str_arr_to_json(const char* str_arr,
 		      uint32_t size,
 		      uint32_t el_size,
@@ -70,29 +71,29 @@ esp_err_t switch_get_handler(httpd_req_t* req)
 {
 	char* query;
 	char query_key[MAX_QUERY_KEY_LEN];
-	int8_t btn_no = -1;
+	int btn_no;
 	size_t query_len;
 
+	btn_no = -1;
 	query_len = httpd_req_get_url_query_len(req) + 1;
 	if (query_len > 1)
 	{
 		query = malloc(query_len);
 		if (httpd_req_get_url_query_str(req, query, query_len) == ESP_OK)
 			if (httpd_query_key_value(query, "btn_no", query_key, sizeof(query_key)) == ESP_OK)
-				if (query_key[0] > 0x2f && query_key[0] < 0x30 + NR_BTNS)
-					btn_no = query_key[0] - 0x30;
+				btn_no = atoi(query_key);
 		free(query);
 	}
 
-	if (btn_no != -1)
+	if (btn_no < 0 || btn_no > NR_BTNS - 1)
+	{
+		printf("could not get btn_no -> %d\n", btn_no);
+		httpd_resp_set_status(req, HTTPD_400);
+		httpd_resp_send(req, NULL, 0);
+	} else
 	{
 		printf("got btn_no %d\n", btn_no);
 		httpd_resp_send(req, "OK", 2);
-	} else
-	{
-		printf("could not get btn_no\n");
-		httpd_resp_set_status(req, HTTPD_400);
-		httpd_resp_send(req, NULL, 0);
 	}
 
 
@@ -212,3 +213,4 @@ char* str_arr_to_json(const char* str_arr,
 
 	return tmp;
 }
+
