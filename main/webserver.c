@@ -87,15 +87,12 @@ esp_err_t switch_get_handler(httpd_req_t* req)
 
 	if (btn_no < 0 || btn_no > NR_BTNS - 1)
 	{
-		printf("could not get btn_no -> %d\n", btn_no);
 		httpd_resp_set_status(req, HTTPD_400);
 		httpd_resp_send(req, NULL, 0);
 	} else
 	{
-		printf("got btn_no %d\n", btn_no);
 		httpd_resp_send(req, "OK", 2);
 	}
-
 
 	return ESP_OK;
 }
