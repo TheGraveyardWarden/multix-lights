@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multix IoT System</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: monospace;
+        color: white;
+      }
+
+      .body {
+        background-color: #1d1d1d;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .column {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .aic {
+        align-items: center;
+      }
+
+      .jcc {
+        justify-content: center;
+      }
+
+      .btn-con {
+        width: 100%;
+        max-width: 500px;
+        gap: 20px;
+      }
+
+      .btn-con button {
+        width: 90%;
+        max-width: 150px;
+        background-color: #1d1d1d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="body column aic jcc">
+      <div class="btn-con column aic jcc">
+        <button class="rbtn">Relay 1 | OFF</button>
+        <button class="rbtn">Relay 2 | ON</button>
+        <button class="rbtn">Relay 3 | OFF</button>
+        <button class="rbtn">Relay 4 | OFF</button>
+      </div>
+    </div>
+    <script>
+      const HOST = "192.168.1.7";
+      const btns = document.querySelectorAll(".rbtn");
+    </script>
+  </body>
+</html>
+
+<!-- 
+
+  /btn-names: [relay1, relay2, relay3, relay4]
+  /btn-status: [0, 1, 0, 0]
+  /switch/1|2|3|4: btn-status
+  /rename/1|2|3|4/newname: btn-name
+
+-->
