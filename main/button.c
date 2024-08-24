@@ -82,3 +82,38 @@ void button_arr_to_json(button_t* btns, size_t size, char** json)
 		free(items[i]);
 }
 
+int button_parse_json(button_t* btn, char* json)
+{
+	int json_len, name_len;
+	char *t1, *t2, name[MAX_BUTTON_NAME_LEN], status_str[2];
+	enum button_status status;
+
+	json_len = strlen(json);
+	if (!json_len || json[0] != '{' || json[json_len-1] != '}')
+		return -1;
+
+	// {"name":"shit","status":1}
+	t1 = strstr(json, "\"name\"");
+	if (!t1) return -1;
+	t1 += 6;
+	t1 = strstr(t1, "\"");
+	if (!t1) return -1;
+	t1++;
+	t2 = strstr(t1, "\"");
+	if (!t2) return -1;
+	name_len = t2 - t1 < MAX_BUTTON_NAME_LEN - 1 ? t2 - t1 : MAX_BUTTON_NAME_LEN - 1;
+	strncpy(name, t1, name_len);
+	name[name_len] = 0;
+
+	t1 = strstr(json, "\"status\":");
+	if (!t1) return -1;
+	t1 += 9;
+	while (*t1 == ' ') t1++;
+	*status_str = *t1;
+	status_str[1] = 0;
+	status = atoi(status_str) == 0 ? button_status_off : button_status_on;
+
+	button_create(btn, name, status);
+	return 0;
+}
+

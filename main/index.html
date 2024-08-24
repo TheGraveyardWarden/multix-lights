@@ -15,11 +15,22 @@
         background-color: #1d1d1d;
         width: 100vw;
         height: 100vh;
+	gap: 20px;
       }
 
       .column {
         display: flex;
         flex-direction: column;
+      }
+
+      .row {
+	display: flex;
+	flex-direction: row;
+      }
+
+      .row-r {
+	display: flex;
+	flex-direction: row-reverse;
       }
 
       .aic {
@@ -36,34 +47,105 @@
         gap: 20px;
       }
 
-      .btn-con button {
+      button {
         width: 90%;
         max-width: 150px;
         background-color: #1d1d1d;
+      }
+
+      .inp-row {
+        width: 100%;
+        max-width: 500px;
+        gap: 20px;
+	display: none;
+      }
+
+      input {
+	background: #1d1d1d;
+	color: white;
       }
     </style>
   </head>
   <body>
     <div class="body column aic jcc">
-      <div class="btn-con column aic jcc">
-        <button class="rbtn">Relay 1 | OFF</button>
-        <button class="rbtn">Relay 2 | ON</button>
-        <button class="rbtn">Relay 3 | OFF</button>
-        <button class="rbtn">Relay 4 | OFF</button>
+      <div class="btn-con column aic jcc"></div>
+      <div class="inp-row row-r jcc aic" >
+	<button onclick="onSave()">save</button>
+	<button onclick="onCancel()">cancel</button>
       </div>
     </div>
     <script>
-      const HOST = "192.168.1.7";
-      const btns = document.querySelectorAll(".rbtn");
+      const HOST = "http://192.168.1.30";
+      const con = document.querySelector(".btn-con");
+      const inpRow = document.querySelector(".inp-row");
+      let selectedIdx = -1;
+      let g_btns = [];
+
+      const updateBtns = () => {
+		fetch(`${HOST}/buttons`)
+		      .then(res => res.json())
+		      .then(btns => {
+			      g_btns = btns;
+			      con.innerHTML = "";
+			      btns.forEach((btn, i) => {
+				      const b = document.createElement("button");
+				      b.innerText = `${btn.name} | ${parseStatus(btn.status)}`;
+				      b.onclick = () => onBtnClick(i);
+				      b.oncontextmenu = (e) => onBtnRightClick(e, i);
+				      con.appendChild(b);
+			      });
+		      })
+		      .catch(err => {
+			      console.log(err);
+		      })
+      }
+
+      const parseStatus = stat => {
+	      return stat === 0 ? "OFF" : "ON";
+      }
+
+      const onBtnClick = idx => {
+	      alert("button clicked " + idx);
+      }
+
+      const onBtnRightClick = (e, idx) => {
+	      e.preventDefault();
+	      const prev_inp = document.querySelector(".inp");
+	      if (prev_inp) prev_inp.remove();
+	      selectedIdx = idx;
+	      const inp = document.createElement("input");
+	      inp.value = g_btns[idx].name;
+	      inp.classList.add("inp");
+	      inpRow.appendChild(inp);
+	      inpRow.style.display = "flex";
+      }
+
+      const onSave = () => {
+	      const inp = document.querySelector(".inp");
+
+	      fetch(`${HOST}/buttons?idx=${selectedIdx}`, {
+		      method: "POST",
+		      body: JSON.stringify({
+			      name: inp.value,
+			      status: g_btns[selectedIdx].status
+		      })
+	      })
+		      .then(() => {
+	      			inpRow.style.display = "none";
+				inp.remove();
+			      	updateBtns();
+		      })
+		      .catch(() => {
+			      alert("Please Try Again!");
+		      });
+      }
+
+      const onCancel = () => {
+	      inpRow.style.display = "none";
+      }
+
+      updateBtns();
     </script>
   </body>
 </html>
 
-<!-- 
-
-  /btn-names: [relay1, relay2, relay3, relay4]
-  /btn-status: [0, 1, 0, 0]
-  /switch/1|2|3|4: btn-status
-  /rename/1|2|3|4/newname: btn-name
-
--->
