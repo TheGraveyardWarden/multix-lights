@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "webserver.h"
+#include "db.h"
 
 // ----------------------------------------- DEFINES
 #define MAX_QUERY_KEY_LEN	256
@@ -144,6 +145,13 @@ httpd_handle_t webserver_start(void)
 
 	init_btns();
 
+	printf("initializing db\n");
+	if (db_init() != ESP_OK)
+	{
+		printf("failed to initialize db\n");
+		return NULL;
+	}
+
 	printf("starting webserver\n");
 	if (httpd_start(&server, &config) == ESP_OK)
 	{
@@ -161,6 +169,8 @@ httpd_handle_t webserver_start(void)
 
 esp_err_t webserver_stop(httpd_handle_t server)
 {
+	printf("closing db\n");
+	db_deinit();
 	printf("stopping webserver\n");
 	return httpd_stop(server);
 }
