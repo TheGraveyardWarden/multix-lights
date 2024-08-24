@@ -19,13 +19,9 @@ typedef struct button {
 #define INIT_BUTTON(btn) button_t btn = BUTTON_INIT("default_name", button_status_off);
 
 void button_create(button_t* btn, const char* name, enum button_status status);
-
 void button_print(button_t* btn);
-
 void button_clone(button_t* to, button_t* from);
-
 void button_to_json(button_t* btn, char** json);
-
 void button_arr_to_json(button_t* btns, size_t size, char** json);
 
 #endif
