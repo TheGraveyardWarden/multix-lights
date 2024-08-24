@@ -1,6 +1,3 @@
 key,type,encoding,value
 global,namespace,,
-relay1,data,string,Relay #1
-relay2,data,string,Relay #2
-relay3,data,string,Relay #3
-relay4,data,string,Relay #4
+btns,data,binary,0

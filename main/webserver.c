@@ -28,6 +28,46 @@ int8_t switch_light(int btn_no);
 esp_err_t root_get_handler(httpd_req_t* req)
 {
 	printf("/\n");
+
+	button_t* btns;
+	size_t nr_btns;
+	esp_err_t err;
+	err = db_read_btns(&btns, &nr_btns);
+	if (err != ESP_OK)
+		printf("err occured: %s\n", esp_err_to_name(err));
+	else if (nr_btns) {
+		printf("there are %u buttons\n", nr_btns);
+
+		int i;
+
+		for (i = 0; i < nr_btns; i++)
+			button_print(&btns[i]);
+
+		char* j;
+		button_arr_to_json(btns, nr_btns, &j);
+		printf("SHEEESH:\n%s\n", j);
+		free(j);
+
+		free(btns);
+	} else {
+		printf("no buttons found\n");
+		printf("setting buttons to default\n");
+		button_t new_btns[] = {
+			BUTTON_INIT("btn 1", button_status_off),
+			BUTTON_INIT("btn 2", button_status_off),
+			BUTTON_INIT("btn 3", button_status_off),
+			BUTTON_INIT("btn 4", button_status_off),
+		};
+
+		err = db_write_btns(new_btns, 4);
+		if (err != ESP_OK)
+			printf("failed to write\n");
+		else
+			printf("wrote default buttons\n");
+
+		free(btns);
+	}
+
 	httpd_resp_send(req, (const char*)index_html, HTTPD_RESP_USE_STRLEN);
 	return ESP_OK;
 }

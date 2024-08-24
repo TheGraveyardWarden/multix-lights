@@ -50,7 +50,7 @@ esp_err_t db_read_str(const char* key, char** value)
 	err = nvs_get_str(my_handle, key, NULL, &required_size);
 	if (err != ESP_OK) goto out;
 
-	*value = malloc(required_size * sizeof(char));
+	*value = malloc(required_size);
 	err = nvs_get_str(my_handle, key, *value, &required_size);
 	if (err != ESP_OK) goto cleanup;
 
@@ -61,3 +61,65 @@ cleanup:
 	return err;
 }
 
+esp_err_t db_read_btns(button_t** btns, size_t* size)
+{
+	esp_err_t err;
+	size_t required_size;
+
+	*size = 0;
+
+	err = nvs_get_blob(my_handle, "btns", NULL, &required_size);
+	if (err != ESP_OK) goto out;
+
+	*btns = malloc(required_size);
+	err = nvs_get_blob(my_handle, "btns", *btns, &required_size);
+	if (err != ESP_OK) goto cleanup;
+
+	*size = required_size / sizeof(struct button);
+
+out:
+	return err;
+cleanup:
+	free(*btns);
+	return err;
+}
+
+esp_err_t db_write_btns(button_t* btns, size_t size)
+{
+	esp_err_t err;
+
+	err = nvs_set_blob(my_handle, "btns", btns, size * sizeof(struct button));
+	if (err != ESP_OK) goto err;
+
+	err = nvs_commit(my_handle);
+
+err:
+	return err;
+}
+
+esp_err_t db_write_btn(button_t* btn, int idx)
+{
+	esp_err_t err;
+	size_t nr_btns;
+
+	button_t* prev;
+	err = db_read_btns(&prev, &nr_btns);
+	if (err != ESP_OK) goto out;
+
+	if (idx < (int)nr_btns) {
+		button_clone(&prev[idx], btn);
+		err = db_write_btns(prev, nr_btns);
+		if (err != ESP_OK) goto cleanup;
+	} else {
+		err = ESP_FAIL;
+		goto cleanup;
+	}
+
+	free(prev);
+
+out:
+	return err;
+cleanup:
+	free(prev);
+	return err;
+}
