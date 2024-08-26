@@ -15,5 +15,6 @@ esp_err_t db_read_str(const char* key, char** value);
 esp_err_t db_read_btns(button_t** btns, size_t* size);
 esp_err_t db_write_btns(button_t* btns, size_t size);
 esp_err_t db_write_btn(button_t* btn, int idx);
+esp_err_t db_update_btn_status(enum button_status status, int idx);
 
 #endif

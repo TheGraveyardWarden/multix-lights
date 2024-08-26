@@ -18,11 +18,6 @@ void button_print(button_t* btn)
 		btn->status == button_status_off ? "off" : "on");
 }
 
-void button_clone(button_t* to, button_t* from)
-{
-	button_create(to, from->name, from->status);
-}
-
 void button_to_json(button_t* btn, char** json)
 {
 	size_t total_size, btn_name_len;

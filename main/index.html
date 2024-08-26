@@ -105,7 +105,13 @@
       }
 
       const onBtnClick = idx => {
-	      alert("button clicked " + idx);
+	      fetch(`${HOST}/switch?btn_no=${idx}`)
+		      .then(() => {
+			      updateBtns();
+		      })
+		      .catch(err => {
+			      console.log(err);
+		      });
       }
 
       const onBtnRightClick = (e, idx) => {

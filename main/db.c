@@ -123,3 +123,32 @@ cleanup:
 	free(prev);
 	return err;
 }
+
+esp_err_t
+db_update_btn_status(enum button_status status, int idx)
+{
+	esp_err_t err;
+	size_t nr_btns;
+
+	button_t* prev;
+	err = db_read_btns(&prev, &nr_btns);
+	if (err != ESP_OK) goto out;
+
+	if (idx < (int)nr_btns) {
+		prev[idx].status = status;
+		err = db_write_btns(prev, nr_btns);
+		if (err != ESP_OK) goto cleanup;
+	} else {
+		err = ESP_FAIL;
+		goto cleanup;
+	}
+
+	free(prev);
+
+out:
+	return err;
+cleanup:
+	free(prev);
+	return err;
+}
+

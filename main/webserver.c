@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "webserver.h"
 #include "db.h"
+#include "relay.h"
 
 // ----------------------------------------- DEFINES
 #define MAX_QUERY_KEY_LEN	256
@@ -26,7 +27,7 @@ esp_err_t switch_get_handler(httpd_req_t* req)
 
 	char* query;
 	char query_key[MAX_QUERY_KEY_LEN];
-	int btn_no;
+	int btn_no, new_status;
 	size_t query_len;
 
 	btn_no = -1;
@@ -40,7 +41,15 @@ esp_err_t switch_get_handler(httpd_req_t* req)
 		free(query);
 	}
 
-	printf("%d\n", btn_no);
+	if (btn_no > -1 && btn_no < NUM_RELAYS) {
+		new_status = relay_switch(relays[btn_no]);
+		db_update_btn_status(new_status, btn_no);
+	}
+	else {
+		httpd_resp_set_status(req, HTTPD_400);
+		httpd_resp_send(req, NULL, 0);
+		return ESP_OK;
+	}
 
 	httpd_resp_send(req, "OK", 2);
 
@@ -165,13 +174,6 @@ httpd_handle_t webserver_start(void)
 
 	config.lru_purge_enable = true;
 
-	printf("initializing db\n");
-	if (db_init() != ESP_OK)
-	{
-		printf("failed to initialize db\n");
-		return NULL;
-	}
-
 	printf("starting webserver\n");
 	if (httpd_start(&server, &config) == ESP_OK)
 	{
@@ -189,8 +191,6 @@ httpd_handle_t webserver_start(void)
 
 esp_err_t webserver_stop(httpd_handle_t server)
 {
-	printf("closing db\n");
-	db_deinit();
 	printf("stopping webserver\n");
 	return httpd_stop(server);
 }
