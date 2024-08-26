@@ -5,10 +5,10 @@
 #include "driver/gpio.h"
 #include <stdint.h>
 
-#define RELAY_1 18ULL
-#define RELAY_2 19ULL
-#define RELAY_3 21ULL
-#define RELAY_4 22ULL
+#define RELAY_1 18
+#define RELAY_2 19
+#define RELAY_3 21
+#define RELAY_4 22
 
 // pin to mask
 #define PTM(p) (1ULL << (p))

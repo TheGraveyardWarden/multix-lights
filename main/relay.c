@@ -1,6 +1,6 @@
 #include "relay.h"
 
-const int8_t relays[] = {18, 19, 21, 22};
+const int8_t relays[] = {RELAY_1, RELAY_2, RELAY_3, RELAY_4};
 
 esp_err_t relay_init(uint64_t pins) {
         gpio_config_t conf = {};
