@@ -28,6 +28,8 @@ void on_disconnect(void* arg,
 {
 	printf("disconnected from wifi\n");
 	webserver_stop(server);
+	printf("trying again...\n");
+	esp_wifi_connect();
 }
 
 void app_main(void) {
